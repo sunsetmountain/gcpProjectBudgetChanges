@@ -64,6 +64,12 @@ def handle_notification(event, context):
                             "units": "30"
                         }
                     },
+                    "thresholdRules": [
+                        {"thresholdPercent": 0.5},
+                        {"thresholdPercent": 0.75},
+                        {"thresholdPercent": 0.9},
+                        {"thresholdPercent": 1.0}
+                    ],
                     "allUpdatesRule": {
                         "pubsubTopic": "projects/**project_name_goes_here**/topics/**pubsub_topic_goes_here**",
                         "schemaVersion": "1.0"
