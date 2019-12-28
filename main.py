@@ -2,7 +2,7 @@ import base64
 import logging
 import json
 import datetime
-from oauth2client.client import GoogleCredentials
+from google.auth import compute_engine
 from apiclient import discovery
 
 billingID = "000000-AAAAAA-BBBBBB" #replace with the correct billing project
@@ -35,8 +35,9 @@ def handle_notification(event, context):
     if lifecycleState == "ACTIVE" and hasBudgetLabel == False: #ACTIVE checks that the project isn't in DELETE_REQUESTED state
         # Creating credentials to be used for authentication, by using the Application Default Credentials
         # for the Cloud Function runtime environment
-        credentials = GoogleCredentials.get_application_default()
+        credentials = compute_engine.Credentials()
 
+        
         # Using Python Google API Client Library to construct a Resource object for interacting with an API
         # The name and the version of the API to use can be found here https://developers.google.com/api-client-library/python/apis/
         billing_service = discovery.build('cloudbilling', 'v1', credentials=credentials, cache_discovery=False)
@@ -54,7 +55,7 @@ def handle_notification(event, context):
             parent=billing_account,
             body={
                 "budget": {
-                    "displayName": "budget-" + projectID,
+                    "displayName": "sandbox-" + projectID,
                     "budgetFilter": {
                         "projects": ["projects/" + projectNumber]
                     },
@@ -71,7 +72,7 @@ def handle_notification(event, context):
                         {"thresholdPercent": 1.0}
                     ],
                     "allUpdatesRule": {
-                        "pubsubTopic": "projects/**project_name_goes_here**/topics/**pubsub_topic_goes_here**",
+                        "pubsubTopic": "projects/asset-insights/topics/test-budget-notifications",
                         "schemaVersion": "1.0"
                     },
                 }
@@ -90,10 +91,11 @@ def handle_notification(event, context):
         project['labels'] = {
             'component': 'sandbox',
             'env': 'sandbox',
-            'projectid': 'abc0123', 
-            'team': 'development',
+            'ppsid': 'a0123', 
+            'team': 'Operations',
             'project-id': '{}'.format(projectID),
-            'budget-id': '{}'.format(budgetID)
+            'budget-id': '{}'.format(budgetID),
+            'budget-name': 'sandbox-{}'.format(projectID)
         }
         
         #Update the project of interest to include tags
@@ -102,7 +104,7 @@ def handle_notification(event, context):
     elif lifecycleState == "DELETE_REQUESTED" and hasBudgetLabel == True:
         # Creating credentials to be used for authentication, by using the Application Default Credentials
         # for the Cloud Function runtime environment
-        credentials = GoogleCredentials.get_application_default()
+        credentials = compute_engine.Credentials()
 
         # Using Python Google API Client Library to construct a Resource object for interacting with an API
         # The name and the version of the API to use can be found here https://developers.google.com/api-client-library/python/apis/
